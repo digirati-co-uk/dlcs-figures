@@ -42,7 +42,7 @@ function sortNav(nav) {
     return nav.sort(compare);
 }
 
-gulp.task('site', ['indexSite'], function () {
+gulp.task('default', ['indexSite'], function () {
     var renderer = new marked.Renderer();
 
     // replace the markdown renderer's code() function with our own one:
@@ -100,5 +100,5 @@ gulp.task('site', ['indexSite'], function () {
         }))
         .pipe(ext_replace('.html'))
         // Output to build directory
-        .pipe(gulp.dest('./'));
+        .pipe(gulp.dest('./gen/'));
 });
