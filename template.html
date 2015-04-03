@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>{{{title}}}</title>
+    <link rel="stylesheet" href="seq.css" />
+    <script src="https://cdn.rawgit.com/knsv/mermaid/0.4.0/dist/mermaid.full.js"></script>
+    <script>
+        var mermaid_config = {
+            startOnLoad:true,
+            htmlLabels:true
+        }
+        mermaid.sequenceConfig = {
+            diagramMarginX:50,
+            diagramMarginY:10,
+            boxTextMargin:5,
+            noteMargin:10,
+            messageMargin:35,
+            mirrorActors:true,
+            width:150,
+            // Height of actor boxes
+            height:30
+        };
+    </script>
+</head>
+<body>
+
+{{{contents}}}
+
+</body>
+</html>
