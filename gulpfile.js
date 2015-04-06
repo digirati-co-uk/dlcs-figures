@@ -127,7 +127,7 @@ gulp.task('makepngs', function () {
 
     var express = require('express');
     var app = express();
-    app.use('/', express.static('./gen')); // we only need the html
+    app.use('/', express.static('./')); // we only need the html
     var port = process.env.PORT || 3000;
     expressServer = app.listen(port);
     console.log("now serving generated HTML on http://127.0.0.1:" + port);
@@ -146,7 +146,7 @@ gulp.task('makepngs', function () {
             var pos = file.path.lastIndexOf("gen/" + file.relative);
             var pngName = file.relative.replace(".html", ".png");
             var pngPath = file.path.substring(0, pos) + "png/" + pngName;
-            var data = {"pngPath":pngPath, "uri":"http://127.0.0.1:" + port + "/" + file.relative };
+            var data = {"pngPath":pngPath, "uri":"http://127.0.0.1:" + port + "/gen/" + file.relative };
             var cmd = "phantomjs phpng.js " + data.uri + " " + data.pngPath;
             console.log("Will exec: " + cmd);
             exec(cmd, function(err, stdout, stderr) {
