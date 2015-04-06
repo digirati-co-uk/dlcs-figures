@@ -110,6 +110,15 @@ gulp.task('default', ['indexSite'], function () {
     return pipeOutput;
 });
 
+var expressServer;
+
+gulp.task('png', ['makepngs'], function(cb){
+    if(expressServer) {
+        console.log("closing server...");
+        expressServer.close();
+    }
+    cb();
+})
 
 /*
 / To run this task, you need PhantomJS on the path
@@ -120,7 +129,7 @@ gulp.task('makepngs', function () {
     var app = express();
     app.use('/', express.static('./gen')); // we only need the html
     var port = process.env.PORT || 3000;
-    var server = app.listen(port);
+    expressServer = app.listen(port);
     console.log("now serving generated HTML on http://127.0.0.1:" + port);
 
     // for running phantomjs:
@@ -137,24 +146,16 @@ gulp.task('makepngs', function () {
             var pos = file.path.lastIndexOf("gen/" + file.relative);
             var pngName = file.relative.replace(".html", ".png");
             var pngPath = file.path.substring(0, pos) + "png/" + pngName;
-            return {"pngPath":pngPath, "uri":"http://127.0.0.1:" + port + "/" + file.relative };
-        }))
-
-        // sync because we want the streams to finish before closing the server
-        .pipe(eventStream.map(function (file, callback) {
-
-            var cmd = "phantomjs phpng.js " + file.data.uri + " " + file.data.pngPath;
+            var data = {"pngPath":pngPath, "uri":"http://127.0.0.1:" + port + "/" + file.relative };
+            var cmd = "phantomjs phpng.js " + data.uri + " " + data.pngPath;
             console.log("Will exec: " + cmd);
             exec(cmd, function(err, stdout, stderr) {
-                console.log(stdout);
-                console.log(stderr);
-                console.log(err);
+                console.log("executing external cmd: " + cmd);
+                if(err) console.log(err);
             });
-            callback(null, file);
-        }));
-
-    // need this to happen synchronously
-    server.close();
+            return data;
+        }))
 
     return pipeOutput;
+
 });
