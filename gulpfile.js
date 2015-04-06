@@ -4,7 +4,7 @@ var data = require('gulp-data');
 var fm = require('front-matter');
 var marked = require('marked');
 var fs = require('fs');
-var es = require('event-stream');
+var eventStream = require('event-stream');
 var hogan = require('hogan.js');
 var ext_replace = require('gulp-ext-replace');
 
@@ -81,7 +81,7 @@ gulp.task('default', ['indexSite'], function () {
 
 
         // Run each file through a template
-        .pipe(es.map(function (file, callback) {
+        .pipe(eventStream.map(function (file, callback) {
             file.contents = new Buffer(template.render(file));
             callback(null, file);
         }))
@@ -94,7 +94,7 @@ gulp.task('default', ['indexSite'], function () {
 
 
     var indexFile = gulp.src("index.html")
-        .pipe(es.map(function (file, callback) {
+        .pipe(eventStream.map(function (file, callback) {
             var list = [];
             var sortedList = sortNav(fileList);
             sortedList.forEach(function (item) {
@@ -111,20 +111,50 @@ gulp.task('default', ['indexSite'], function () {
 });
 
 
-// http://knsv.github.io/mermaid/mermaidCLI.html
 /*
-/ To run this task, you need mermaid installed globally and PhantomJS on the path
+/ To run this task, you need PhantomJS on the path
  */
 gulp.task('makepngs', function () {
 
-    console.log("Generating .PNG files...");
+    var express = require('express');
+    var app = express();
+    app.use('/', express.static('./gen')); // we only need the html
+    var port = process.env.PORT || 3000;
+    var server = app.listen(port);
+    console.log("now serving generated HTML on http://127.0.0.1:" + port);
 
-    return gulp.src('md-src/**/*.md')
+    // for running phantomjs:
+    var exec = require("child_process").exec;
 
-        // Extract YAML front-matter, build a list of the md files so we can sort them
+    var pipeOutput = gulp.src('gen/*.html')
+
+        // note to self - the "file" objects being streamed by gulp.src are "vinyl":
+        // https://github.com/wearefractal/vinyl
+        // https://medium.com/@contrahacks/gulp-3828e8126466
+
+        // get the file name and save the png path in the gulp-data property
         .pipe(data(function (file) {
-            var content = fm(String(file.contents));
-            var name = file.relative.substr(0, file.relative.length - 3);
-            fileList.push({name: name, title: content.attributes.title, order: content.attributes.order});
+            var pos = file.path.lastIndexOf("gen/" + file.relative);
+            var pngName = file.relative.replace(".html", ".png");
+            var pngPath = file.path.substring(0, pos) + "png/" + pngName;
+            return {"pngPath":pngPath, "uri":"http://127.0.0.1:" + port + "/" + file.relative };
+        }))
+
+        // sync because we want the streams to finish before closing the server
+        .pipe(eventStream.map(function (file, callback) {
+
+            var cmd = "phantomjs phpng.js " + file.data.uri + " " + file.data.pngPath;
+            console.log("Will exec: " + cmd);
+            exec(cmd, function(err, stdout, stderr) {
+                console.log(stdout);
+                console.log(stderr);
+                console.log(err);
+            });
+            callback(null, file);
         }));
+
+    // need this to happen synchronously
+    server.close();
+
+    return pipeOutput;
 });

@@ -38,7 +38,13 @@ sequenceDiagram
     Tom->>John: Hello John, how are you?
     John-->>Tom: Great!</div>
 
-<hr/>
-<p><a href="../index.html">Return to list of diagrams</a></p>
+<script>
+
+    if(location.search.indexOf('nav') != -1)
+    {
+        document.write('<hr/><p><a href="../index.html">Return to list of diagrams</a></p>');
+    }
+
+</script>
 </body>
 </html>
