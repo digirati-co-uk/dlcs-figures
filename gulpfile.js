@@ -75,6 +75,7 @@ gulp.task('default', ['indexSite'], function () {
 
             var name = file.relative.substr(0, file.relative.length - 3);
             file.name = name;
+	    file.png = "https://digirati-co-uk.github.io/dlcs-figures/png/" + name + ".png";
 
             // this becomes file.data:
             return content.attributes;
