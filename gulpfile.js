@@ -7,6 +7,7 @@ var fs = require('fs');
 var eventStream = require('event-stream');
 var hogan = require('hogan.js');
 var ext_replace = require('gulp-ext-replace');
+var gutil = require('gulp-util');
 
 
 var fileList = [];
@@ -112,12 +113,11 @@ gulp.task('default', ['indexSite'], function () {
 
 var expressServer;
 
-gulp.task('png', ['makepngs'], function(cb){
+gulp.task('png', ['makepngs'], function(){
     if(expressServer) {
         console.log("closing server...");
         expressServer.close();
     }
-    cb();
 })
 
 /*
@@ -133,15 +133,30 @@ gulp.task('makepngs', function () {
     console.log("now serving generated HTML on http://127.0.0.1:" + port);
 
     // for running phantomjs:
-    var exec = require("child_process").exec;
+    var exec = require("child_process").exec; //.execSync;
 
     var pipeOutput = gulp.src('gen/*.html')
+
+	.pipe(eventStream.mapSync(function (file) {
+	    var pos = file.path.lastIndexOf("gen/" + file.relative);
+            var pngName = file.relative.replace(".html", ".png");
+            var pngPath = file.path.substring(0, pos) + "png/" + pngName;
+            var uri = "http://127.0.0.1:" + port + "/gen/" + file.relative;
+            var cmd = "phantomjs phpng.js " + uri + " " + pngPath;
+            console.log("Will exec: " + cmd);
+            exec(cmd, function(err, stdout, stderr) {
+                console.log("executing external cmd: " + cmd);
+                if(err) console.log(err);
+            });
+            //callback(null, file);
+        }))
 
         // note to self - the "file" objects being streamed by gulp.src are "vinyl":
         // https://github.com/wearefractal/vinyl
         // https://medium.com/@contrahacks/gulp-3828e8126466
 
         // get the file name and save the png path in the gulp-data property
+/*
         .pipe(data(function (file) {
             var pos = file.path.lastIndexOf("gen/" + file.relative);
             var pngName = file.relative.replace(".html", ".png");
@@ -154,7 +169,9 @@ gulp.task('makepngs', function () {
                 if(err) console.log(err);
             });
             return data;
-        }))
+        })) 
+*/
+	.pipe(gutil.noop());
 
     return pipeOutput;
 
