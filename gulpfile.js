@@ -48,10 +48,10 @@ gulp.task('default', ['indexSite'], function () {
     renderer.code = function (code, language) {
         if (code.match(/^sequenceDiagram/) || code.match(/^graph/) || code.match(/^info/) || code.match(/^gantt/)) {
 
-            return '<div class="mermaid">' + code + '</div>';
+            return '<div class="mermaid">\n' + code + '\n</div>';
         }
         else {
-            return '<pre><code>' + code + '</code></pre>';
+            return '<pre><code>\n' + code + '\n</code></pre>';
         }
     };
 

@@ -15,4 +15,6 @@ sequenceDiagram
           API->>User: (application/pdf response)
        else build time gt threshold
           API->>User: 301 redirect to wait/notify page
+       end
+    end
 ```

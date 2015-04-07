@@ -25,7 +25,8 @@
 </head>
 <body>
 
-<div class="mermaid">sequenceDiagram
+<div class="mermaid">
+sequenceDiagram
     User->>API: GET /pdf?seq=/iiif/cust/seq/
     alt pdf exists in cust S3
        API->>User: (application/pdf response)
@@ -34,7 +35,10 @@
        alt build time lt threshold
           API->>User: (application/pdf response)
        else build time gt threshold
-          API->>User: 301 redirect to wait/notify page</div>
+          API->>User: 301 redirect to wait/notify page
+       end
+    end
+</div>
 
 <script>
 
