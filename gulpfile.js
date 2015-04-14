@@ -8,6 +8,7 @@ var eventStream = require('event-stream');
 var hogan = require('hogan.js');
 var ext_replace = require('gulp-ext-replace');
 var gutil = require('gulp-util');
+var del = require('del');
 
 
 var fileList = [];
@@ -20,6 +21,14 @@ gulp.task('indexSite', function () {
             var name = file.relative.substr(0, file.relative.length - 3);
             fileList.push({name: name, title: content.attributes.title, order: content.attributes.order});
         }));
+});
+
+gulp.task('clean:gen', function (cb) {
+    del(['./gen/*.html'], cb);
+});
+
+gulp.task('clean:png', function (cb) {
+    del(['./png/*.png'], cb);
 });
 
 function compare(a, b) {
@@ -41,7 +50,7 @@ function sortNav(nav) {
     return nav.sort(compare);
 }
 
-gulp.task('default', ['indexSite'], function () {
+gulp.task('default', ['indexSite', 'clean:gen'], function () {
     var renderer = new marked.Renderer();
 
     // replace the markdown renderer's code() function with our own one:
@@ -75,7 +84,7 @@ gulp.task('default', ['indexSite'], function () {
 
             var name = file.relative.substr(0, file.relative.length - 3);
             file.name = name;
-	    file.png = "https://digirati-co-uk.github.io/dlcs-figures/png/" + name + ".png";
+	    file.png = "../png/" + name + ".png";
 
             // this becomes file.data:
             return content.attributes;
@@ -121,17 +130,28 @@ gulp.task('png', ['makepngs'], function(){
     }
 })
 
-/*
-/ To run this task, you need PhantomJS on the path
- */
-gulp.task('makepngs', function () {
-
+gulp.task('server', function(){
     var express = require('express');
     var app = express();
     app.use('/', express.static('./')); // we only need the html
     var port = process.env.PORT || 3000;
     expressServer = app.listen(port);
     console.log("now serving generated HTML on http://127.0.0.1:" + port);
+});
+
+/*
+/ To run this task, you need PhantomJS on the path
+ */
+gulp.task('makepngs', ['server', 'clean:png'], function () {
+
+    var port = process.env.PORT || 3000;
+
+    //var express = require('express');
+    //var app = express();
+    //app.use('/', express.static('./')); // we only need the html
+    //var port = process.env.PORT || 3000;
+    //expressServer = app.listen(port);
+    //console.log("now serving generated HTML on http://127.0.0.1:" + port);
 
     // for running phantomjs:
     var exec = require("child_process").exec; //.execSync;
